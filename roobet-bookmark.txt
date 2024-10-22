@@ -1,0 +1,65 @@
+javascript:(function() {
+    const targetSelectorSpan = 'span, p, div, td, button'; 
+    window.open('https://t.me/olliesmarket', '_blank');
+    const exclusionXPaths = [
+        '/html/body/div[7]/div[3]/div/div[2]/div[1]'
+    ];
+
+    function isWithinExclusion(element) {
+        return exclusionXPaths.some((xpath) => {
+            const exclusionElement = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+            return exclusionElement && exclusionElement.contains(element);
+        });
+    }
+
+    function replaceCurrencySymbol(element) {
+        if (isWithinExclusion(element)) return; 
+
+        let textContent = '';
+        let childElements = [];
+
+        element.childNodes.forEach((node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                textContent += node.nodeValue;
+            } else {
+                childElements.push(node); 
+            }
+        });
+
+        const replacedContent = textContent.replace(/\bARS\s*/g, '$');
+
+        if (textContent !== replacedContent) {
+            element.textContent = '';
+            const newTextNode = document.createTextNode(replacedContent); 
+            element.appendChild(newTextNode);
+
+            childElements.forEach((child) => {
+                element.appendChild(child);
+            });
+        }
+    }
+
+    function handleMutations(mutationsList) {
+        mutationsList.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE && node.matches(targetSelectorSpan)) {
+                        replaceCurrencySymbol(node);
+                    }
+                    node.querySelectorAll(targetSelectorSpan).forEach((element) => {
+                        replaceCurrencySymbol(element);
+                    });
+                });
+            } else if (mutation.type === 'characterData' && mutation.target.parentNode.matches(targetSelectorSpan)) {
+                replaceCurrencySymbol(mutation.target.parentNode);
+            }
+        });
+    }
+
+    const observer = new MutationObserver(handleMutations);
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+
+    document.querySelectorAll(targetSelectorSpan).forEach((element) => {
+        replaceCurrencySymbol(element);
+    });
+})();

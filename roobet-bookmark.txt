@@ -1,6 +1,6 @@
 javascript:(function() {
     const targetSelectorSpan = 'span, p, div, td, button'; 
-    window.open('https://t.me/olliesmarket', '_blank');
+    window.open('https://t.me/tools2larp', '_blank');
     const exclusionXPaths = [
         '/html/body/div[7]/div[3]/div/div[2]/div[1]'
     ];
